@@ -410,6 +410,12 @@ jobs:
           VITE_DEFAULT_ATRUST_HOST: ${{ secrets.VITE_DEFAULT_ATRUST_HOST }}
           VITE_DEFAULT_ATRUST_PORT: ${{ secrets.VITE_DEFAULT_ATRUST_PORT }}
           VITE_DEFAULT_ATRUST_USERNAME: ${{ secrets.VITE_DEFAULT_ATRUST_USERNAME }}
+          VITE_CONTACT_NAME: ${{ secrets.VITE_CONTACT_NAME }}
+          VITE_CONTACT_WORK_NO: ${{ secrets.VITE_CONTACT_WORK_NO }}
+          VITE_CONTACT_COMPANY: ${{ secrets.VITE_CONTACT_COMPANY }}
+          VITE_CONTACT_ROLE: ${{ secrets.VITE_CONTACT_ROLE }}
+          VITE_CONTACT_EMAIL: ${{ secrets.VITE_CONTACT_EMAIL }}
+          VITE_CONTACT_CARD_URL: ${{ secrets.VITE_CONTACT_CARD_URL }}
 
       - name: Verify macOS Bundle Architecture
         if: runner.os == 'macOS'

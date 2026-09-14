@@ -6,7 +6,7 @@ import {
   BgColorsOutlined,
   InfoCircleOutlined,
   CloudDownloadOutlined,
-  UserOutlined,
+  CustomerServiceOutlined,
   LogoutOutlined,
 } from '@ant-design/icons-vue';
 
@@ -22,6 +22,8 @@ defineEmits<{
   (e: 'openSettings'): void;
   /** 触发打开关于雨燕弹窗 */
   (e: 'openAbout'): void;
+  /** 触发打开联系我们弹窗 */
+  (e: 'openContact'): void;
 }>();
 
 const { isDark } = useTheme();
@@ -68,36 +70,56 @@ const handleLogout = async () => {
           </div>
           <template #overlay>
             <a-menu class="user-dropdown-menu">
-              <a-menu-item v-if="isTauriClient" key="check-update" @click="handleCheckUpdateClick">
+              <a-menu-item v-if="isTauriClient" key="check-update" class="c4d-menu-item item-update" @click="handleCheckUpdateClick">
                 <template #icon>
-                  <CloudDownloadOutlined />
+                  <div class="menu-icon-capsule icon-update">
+                    <CloudDownloadOutlined />
+                  </div>
                 </template>
-                检查更新
+                <div class="menu-label-box">
+                  <span class="menu-title">检查更新</span>
+                  <span class="menu-sub">检测最新客户端版本</span>
+                </div>
               </a-menu-item>
 
-              <a-menu-item v-if="isTauriClient" key="about" @click="$emit('openAbout')">
+              <a-menu-item v-if="isTauriClient" key="about" class="c4d-menu-item item-about" @click="$emit('openAbout')">
                 <template #icon>
-                  <InfoCircleOutlined />
+                  <div class="menu-icon-capsule icon-about">
+                    <InfoCircleOutlined />
+                  </div>
                 </template>
-                关于平台
+                <div class="menu-label-box">
+                  <span class="menu-title">关于平台</span>
+                  <span class="menu-sub">软件信息与环境诊断</span>
+                </div>
               </a-menu-item>
 
-              <a-menu-divider />
+              <a-menu-divider class="c4d-divider" />
 
-              <a-menu-item key="profile" disabled>
+              <a-menu-item key="contact" class="c4d-menu-item item-contact" @click="$emit('openContact')">
                 <template #icon>
-                  <UserOutlined />
+                  <div class="menu-icon-capsule icon-contact">
+                    <CustomerServiceOutlined />
+                  </div>
                 </template>
-                用户资料
+                <div class="menu-label-box">
+                  <span class="menu-title">联系我们</span>
+                  <span class="menu-sub">企业微信极速直达</span>
+                </div>
               </a-menu-item>
 
-              <a-menu-divider />
+              <a-menu-divider class="c4d-divider" />
 
-              <a-menu-item key="logout" @click="handleLogout">
+              <a-menu-item key="logout" class="c4d-menu-item item-logout" @click="handleLogout">
                 <template #icon>
-                  <LogoutOutlined />
+                  <div class="menu-icon-capsule icon-logout">
+                    <LogoutOutlined />
+                  </div>
                 </template>
-                退出登录
+                <div class="menu-label-box">
+                  <span class="menu-title">退出登录</span>
+                  <span class="menu-sub">安全退出程序</span>
+                </div>
               </a-menu-item>
             </a-menu>
           </template>

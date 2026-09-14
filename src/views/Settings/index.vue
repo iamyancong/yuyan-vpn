@@ -5,9 +5,12 @@ import {
   SafetyOutlined,
   SaveOutlined,
   ReloadOutlined,
+  ImportOutlined,
+  ExportOutlined,
 } from '@ant-design/icons-vue';
 import { useVpnSettings } from './hooks/useVpnSettings';
 import FortinetRouteEditor from './components/FortinetRouteEditor.vue';
+import ConfigProfileModal from '@/components/ConfigProfileModal/index.vue';
 import { BUILT_IN_FORTINET_ROUTES } from './constant';
 
 defineOptions({ name: 'VpnSettings' });
@@ -16,15 +19,32 @@ const {
   formState,
   loading,
   saving,
+  showProfileModal,
+  profileModalMode,
   saveConfig,
   loadConfig,
+  openImportModal,
+  openExportModal,
 } = useVpnSettings();
 </script>
 
 <template>
   <div class="settings-container">
     <div class="settings-header" data-tauri-drag-region>
-      <h1>VPN 登录信息</h1>
+      <div class="header-title-box">
+        <h1>VPN 登录信息</h1>
+        <span class="header-desc">支持一键导入企业专属配置码，免去手动配置网关与路由</span>
+      </div>
+      <div class="header-actions">
+        <a-button type="primary" class="btn-import-profile" @click="openImportModal">
+          <template #icon><ImportOutlined /></template>
+          导入企业配置
+        </a-button>
+        <a-button class="btn-export-profile" @click="openExportModal">
+          <template #icon><ExportOutlined /></template>
+          导出配置码
+        </a-button>
+      </div>
     </div>
 
     <a-spin :spinning="loading">
@@ -129,6 +149,14 @@ const {
         </a-button>
       </div>
     </a-spin>
+
+    <!-- 企业专属配置码导入/导出弹窗 -->
+    <ConfigProfileModal
+      v-model:open="showProfileModal"
+      :mode="profileModalMode"
+      :current-form="formState"
+      @success="loadConfig"
+    />
   </div>
 </template>
 

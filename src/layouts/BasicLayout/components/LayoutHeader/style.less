@@ -302,105 +302,194 @@
  * 🔮 用户头像下拉菜单高级 3D 玻璃拟态与微动效定制
  * ===================================================== */
 .header-user-dropdown {
-  min-width: 180px !important;
-  max-width: 220px !important;
-  width: 180px !important; // 强制限制宽度，解决被异常拉伸展示的问题
+  min-width: 228px !important;
+  max-width: 240px !important;
+  width: 232px !important;
   
   .user-dropdown-menu {
-    padding: 6px !important;
-    background: rgba(255, 255, 255, 0.72) !important;
-    backdrop-filter: blur(20px) saturate(1.9) !important;
-    -webkit-backdrop-filter: blur(20px) saturate(1.9) !important;
-    border: 1px solid rgba(255, 255, 255, 0.45) !important;
-    border-radius: 14px !important;
+    padding: 8px !important;
+    background: 
+      linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(248, 250, 255, 0.72) 100%) padding-box,
+      linear-gradient(135deg, rgba(139, 92, 246, 0.45) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(59, 130, 246, 0.4) 100%) border-box !important;
+    backdrop-filter: blur(28px) saturate(2.2) !important;
+    -webkit-backdrop-filter: blur(28px) saturate(2.2) !important;
+    border: 1.5px solid transparent !important;
+    border-radius: 18px !important;
     box-shadow: 
-      0 10px 32px rgba(15, 23, 42, 0.08),
-      0 4px 12px rgba(15, 23, 42, 0.03),
-      inset 0 1px 0 rgba(255, 255, 255, 0.35) !important;
+      0 16px 40px -4px rgba(15, 23, 42, 0.12),
+      0 6px 16px -2px rgba(124, 58, 237, 0.08),
+      inset 0 1px 1px rgba(255, 255, 255, 0.8) !important;
+    position: relative;
+    overflow: hidden;
     
-    .ant-dropdown-menu-item {
+    /* 顶部细致高光反射 */
+    &::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 32%;
+      background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5) 0%, transparent 100%);
+      pointer-events: none;
+      border-radius: 18px 18px 0 0;
+    }
+    
+    .ant-dropdown-menu-item.c4d-menu-item {
       display: flex;
       align-items: center;
-      gap: 10px;
-      height: 38px;
-      padding: 0 12px !important;
-      color: #334155 !important;
-      font-size: 13px !important;
-      font-weight: 500;
-      border-radius: 9px !important;
-      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+      gap: 12px;
+      height: 48px;
+      padding: 0 10px !important;
+      border-radius: 12px !important;
+      transition: all 0.24s cubic-bezier(0.25, 0.8, 0.25, 1);
+      position: relative;
+      cursor: pointer;
       
-      .anticon {
-        font-size: 14px;
-        color: #64748b;
-        transition: color 0.2s ease, transform 0.2s ease;
+      /* C4D 3D 微立体半透明胶囊图标容器 */
+      .menu-icon-capsule {
+        width: 32px;
+        height: 32px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        color: #ffffff;
+        flex-shrink: 0;
+        transition: all 0.24s cubic-bezier(0.34, 1.56, 0.64, 1);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 
+          0 4px 10px rgba(0, 0, 0, 0.12),
+          inset 0 1px 0 rgba(255, 255, 255, 0.45);
+        
+        /* 图标定制渐变 */
+        &.icon-update {
+          background: linear-gradient(135deg, #7c3aed 0%, #3b82f6 100%);
+          box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+        }
+        
+        &.icon-about {
+          background: linear-gradient(135deg, #0284c7 0%, #06b6d4 100%);
+          box-shadow: 0 4px 12px rgba(2, 132, 199, 0.35);
+        }
+        
+        &.icon-contact {
+          background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+          box-shadow: 0 4px 12px rgba(236, 72, 153, 0.35);
+        }
+        
+        &.icon-logout {
+          background: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+          box-shadow: 0 4px 12px rgba(244, 63, 94, 0.35);
+        }
       }
       
+      /* 文本排版：主标题 + 细腻副标题 */
+      .menu-label-box {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+        flex: 1;
+        
+        .menu-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #1e293b;
+          letter-spacing: -0.1px;
+          transition: color 0.2s ease;
+        }
+        
+        .menu-sub {
+          font-size: 11px;
+          color: #94a3b8;
+          line-height: 1.2;
+          margin-top: 2px;
+          transition: color 0.2s ease;
+        }
+      }
+      
+      /* 悬浮动效：C4D 极光高光浮雕与位移 */
       &:hover:not(.ant-dropdown-menu-item-disabled) {
-        color: var(--theme-primary, #7c3aed) !important;
-        background: linear-gradient(110deg, color-mix(in srgb, var(--theme-primary) 7%, #ffffff), rgba(255, 255, 255, 0.9)) !important;
-        transform: translateX(3px);
+        background: linear-gradient(110deg, rgba(124, 58, 237, 0.08) 0%, rgba(255, 255, 255, 0.7) 100%) !important;
+        transform: translateX(4px);
+        box-shadow: 
+          0 4px 12px rgba(124, 58, 237, 0.08),
+          inset 0 1px 0 rgba(255, 255, 255, 0.6);
         
-        .anticon {
-          color: var(--theme-primary, #7c3aed) !important;
-          transform: scale(1.1);
+        .menu-icon-capsule {
+          transform: scale(1.1) rotate(4deg);
+        }
+        
+        .menu-label-box {
+          .menu-title {
+            color: #7c3aed;
+          }
+          .menu-sub {
+            color: #64748b;
+          }
         }
       }
       
-      &.ant-dropdown-menu-item-disabled {
-        color: #94a3b8 !important;
-        opacity: 0.55;
-        cursor: not-allowed;
-        
-        .anticon {
-          color: #94a3b8 !important;
-        }
+      &:active:not(.ant-dropdown-menu-item-disabled) {
+        transform: translateX(2px) scale(0.99);
       }
     }
     
-    .ant-dropdown-menu-item-divider {
-      margin: 6px 4px !important;
-      background-color: rgba(201, 211, 226, 0.38) !important;
+    /* 极光微光分割线 */
+    .c4d-divider {
+      margin: 6px 8px !important;
+      height: 1px !important;
+      border: none !important;
+      background: linear-gradient(90deg, transparent 0%, rgba(124, 58, 237, 0.25) 50%, transparent 100%) !important;
     }
   }
   
-  // 暗色模式适配
+  /* 暗黑模式 C4D 3D 拟态质感 */
   &.is-dark {
     .user-dropdown-menu {
-      background: rgba(23, 25, 37, 0.72) !important;
-      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      background: 
+        linear-gradient(135deg, rgba(23, 25, 37, 0.88) 0%, rgba(16, 19, 29, 0.82) 100%) padding-box,
+        linear-gradient(135deg, rgba(139, 92, 246, 0.55) 0%, rgba(236, 72, 153, 0.3) 50%, rgba(59, 130, 246, 0.45) 100%) border-box !important;
       box-shadow: 
-        0 12px 36px rgba(0, 0, 0, 0.32),
-        0 4px 16px rgba(0, 0, 0, 0.2),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
-        
-      .ant-dropdown-menu-item {
-        color: #cbd5e1 !important;
-        
-        .anticon {
-          color: #94a6cb;
-        }
-        
-        &:hover:not(.ant-dropdown-menu-item-disabled) {
-          color: color-mix(in srgb, var(--theme-primary) 54%, #ffffff) !important;
-          background: linear-gradient(110deg, color-mix(in srgb, var(--theme-primary) 22%, rgba(255, 255, 255, 0.06)), rgba(255, 255, 255, 0.03)) !important;
-          
-          .anticon {
-            color: color-mix(in srgb, var(--theme-primary) 54%, #ffffff) !important;
+        0 18px 48px -4px rgba(0, 0, 0, 0.45),
+        0 6px 20px -2px rgba(124, 58, 237, 0.16),
+        inset 0 1px 1px rgba(255, 255, 255, 0.1) !important;
+      
+      &::after {
+        background: linear-gradient(to bottom, rgba(255, 255, 255, 0.08) 0%, transparent 100%);
+      }
+      
+      .ant-dropdown-menu-item.c4d-menu-item {
+        .menu-label-box {
+          .menu-title {
+            color: #f1f5f9;
+          }
+          .menu-sub {
+            color: #64748b;
           }
         }
         
-        &.ant-dropdown-menu-item-disabled {
-          color: #475569 !important;
+        &:hover:not(.ant-dropdown-menu-item-disabled) {
+          background: linear-gradient(110deg, rgba(124, 58, 237, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%) !important;
+          box-shadow: 
+            0 4px 14px rgba(0, 0, 0, 0.25),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
           
-          .anticon {
-            color: #475569 !important;
+          .menu-label-box {
+            .menu-title {
+              color: #c4b5fd;
+            }
+            .menu-sub {
+              color: #94a3b8;
+            }
           }
         }
       }
       
-      .ant-dropdown-menu-item-divider {
-        background-color: rgba(255, 255, 255, 0.07) !important;
+      .c4d-divider {
+        background: linear-gradient(90deg, transparent 0%, rgba(139, 92, 246, 0.35) 50%, transparent 100%) !important;
       }
     }
   }

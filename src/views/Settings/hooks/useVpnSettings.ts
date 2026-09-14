@@ -100,6 +100,21 @@ export function useVpnSettings() {
     }
   };
 
+  const showProfileModal = ref(false);
+  const profileModalMode = ref<'import' | 'export'>('import');
+
+  /** 打开企业配置导入弹窗 */
+  const openImportModal = () => {
+    profileModalMode.value = 'import';
+    showProfileModal.value = true;
+  };
+
+  /** 打开企业配置导出弹窗 */
+  const openExportModal = () => {
+    profileModalMode.value = 'export';
+    showProfileModal.value = true;
+  };
+
   onMounted(() => {
     void loadConfig();
   });
@@ -108,7 +123,11 @@ export function useVpnSettings() {
     formState,
     loading,
     saving,
+    showProfileModal,
+    profileModalMode,
     saveConfig,
     loadConfig,
+    openImportModal,
+    openExportModal,
   };
 }

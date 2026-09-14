@@ -9,6 +9,7 @@ import SettingsDrawer from '@/components/SettingsDrawer/index.vue';
 import LayoutHeader from './components/LayoutHeader/index.vue';
 import LayoutSider from './components/LayoutSider/index.vue';
 import AboutModal from '@/components/AboutModal/index.vue';
+import ContactModal from '@/components/ContactModal/index.vue';
 
 defineOptions({ name: 'BasicLayout' });
 
@@ -20,6 +21,9 @@ const openDrawer = ref(false);
 
 /** 关于雨燕弹窗可见性 */
 const showAboutModal = ref(false);
+
+/** 联系我们弹窗可见性 */
+const showContactModal = ref(false);
 
 let unlistenMenuAbout: (() => void) | undefined;
 
@@ -52,8 +56,16 @@ const handleShowAboutModal = () => {
   showAboutModal.value = true;
 };
 
+/**
+ * 显示联系我们弹窗的回调（全局事件驱动）
+ */
+const handleShowContactModal = () => {
+  showContactModal.value = true;
+};
+
 onMounted(() => {
   window.addEventListener('show-about-modal', handleShowAboutModal);
+  window.addEventListener('show-contact-modal', handleShowContactModal);
 
   // 监听 macOS 顶部系统菜单"关于雨燕"点击事件
   if (isTauri()) {
@@ -69,6 +81,7 @@ onMounted(() => {
 
 onUnmounted(() => {
   window.removeEventListener('show-about-modal', handleShowAboutModal);
+  window.removeEventListener('show-contact-modal', handleShowContactModal);
   if (unlistenMenuAbout) {
     unlistenMenuAbout();
   }
@@ -93,6 +106,7 @@ onUnmounted(() => {
         :isTauriClient="isTauriClient" 
         @openSettings="openDrawer = true" 
         @openAbout="showAboutModal = true"
+        @openContact="showContactModal = true"
       />
       
       <!-- 主体内容区域 -->
@@ -110,6 +124,9 @@ onUnmounted(() => {
   
   <!-- 关于雨燕弹窗 -->
   <AboutModal v-model:open="showAboutModal" />
+
+  <!-- 联系我们弹窗 -->
+  <ContactModal v-model:open="showContactModal" />
 </template>
 
 <style scoped lang="less">
