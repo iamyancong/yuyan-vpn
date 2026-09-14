@@ -56,7 +56,7 @@
   * Vite 7 + vue-tsc (构建工具与类型检查)
   * Vue Router 4 (Hash 模式)
   * Ant Design Vue 4 + vxe-pc-ui 4 (UI 组件库)
-  * `@ycwang-dev/components`、`@ycwang-dev/hooks`、`@ycwang-dev/utils` (企业级封装库)
+  * `@yss-ui/components`、`@yss-ui/hooks`、`@yss-ui/utils` (开源企业级组件库)
   * Less (样式预处理)
 * **桌面后端 (Desktop Backend)**
   * Tauri 2 (Rust 2021)
@@ -106,18 +106,12 @@ yuyan-vpn/
 * **Rust**：确保已安装 Rust 稳定版工具链 (含 `rustc`, `cargo` 1.75+)
 * **VPN 引擎**：`openfortivpn` 与带 aTrust Quick SOCKS5/TCP Tunnel 兼容补丁的 `zju-connect` 均提供 Apple Silicon、Intel 版本并随安装包分发，用户机器无需安装 Homebrew、官方 aTrust 客户端或额外命令行工具。
 
-### 2. 配置 NPM 私有源
-本项目使用了托管于 GitHub Packages 的 `@ycwang-dev/*` 企业级私有包。安装依赖前请配置您的 GitHub Token：
+### 2. 安装依赖
+项目已完全开源，组件库与核心依赖均托管于公共 npm 镜像源，直接安装即可：
 
 ```bash
-# 设置您的 GitHub 访问 Token（需要有 read:packages 权限）
-export GITHUB_TOKEN=<your_github_token>
-
-# 安装依赖
 pnpm install
 ```
-
-> **提示**：项目根目录下的 `.npmrc` 会自动读取此环境变量，并将 `@ycwang-dev` 作用域下的请求重定向到 `npm.pkg.github.com`。
 
 ### 3. 常用开发与构建命令
 
