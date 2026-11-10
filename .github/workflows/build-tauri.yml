@@ -592,8 +592,9 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: false
           prerelease: ${{ needs.prep-version.outputs.prerelease == 'true' }}
+          # latest.json 已被下面的通配符包含；重复列出会让 action 并发上传同名文件，
+          # 覆盖时删掉前一个再更新导致 404，Release 停在草稿且缺少 latest.json。
           files: |
-            ./dist-release/latest.json
             ./dist-release/**/*
 
       - name: Commit and Push version bump
