@@ -499,8 +499,10 @@ async fn ensure_gateway_route(
         .ok_or("北京 VPN 网关没有可用的 IPv4 路由")?;
 
     if is_mihomo_fake_ip(destination) {
-        if route_matches_primary_network(&current_text, primary_network) {
-            let destination = destination.to_string();
+        let destination = destination.to_string();
+        if route_matches_primary_network(&current_text, primary_network)
+            && is_host_route_for(&current_text, &destination)
+        {
             let removed = run_sudo_command(
                 sudo_password,
                 "route",
@@ -523,12 +525,15 @@ async fn ensure_gateway_route(
 
     let destination = destination.to_string();
 
-    let _ = run_sudo_command(
-        sudo_password,
-        "route",
-        &["-n", "delete", "-host", &destination],
-    )
-    .await;
+    // 只替换已存在的同地址主机路由；命中的是网段路由（如 Mihomo TUN 分片）时不得删除。
+    if is_host_route_for(&current_text, &destination) {
+        let _ = run_sudo_command(
+            sudo_password,
+            "route",
+            &["-n", "delete", "-host", &destination],
+        )
+        .await;
+    }
 
     let output = run_sudo_command(
         sudo_password,
@@ -560,13 +565,42 @@ async fn ensure_gateway_route(
     Ok(GatewayRouteOutcome::Added(destination))
 }
 
-/** 从 `route -n get` 输出提取实际 IPv4 目标。 */
+/**
+ * 从 `route -n get` 输出提取被查询主机的数值 IPv4（`route to:` 行）。
+ *
+ * 不能读取 `destination:` 行：它是命中路由表项的网络地址（例如 Mihomo TUN 分片路由的
+ * `128.0.0.0`），把它当作主机地址删除会移除整条分片路由。
+ */
 fn routed_ipv4_destination(route_information: &str) -> Option<std::net::Ipv4Addr> {
     route_information.lines().find_map(|line| {
         line.trim()
-            .strip_prefix("destination:")
+            .strip_prefix("route to:")
             .and_then(|value| value.trim().parse().ok())
     })
+}
+
+/**
+ * 判断 `route -n get` 命中的是否正是该地址自身的主机路由。
+ *
+ * `route delete -host` 只按地址匹配，地址与某条网段路由的网络地址相同时会误删网段路由，
+ * 因此删除前必须确认命中项带 `HOST` 标志且目标就是该地址。
+ */
+fn is_host_route_for(route_information: &str, destination: &str) -> bool {
+    let mut destination_matches = false;
+    let mut has_host_flag = false;
+    for line in route_information.lines().map(str::trim) {
+        if let Some(value) = line.strip_prefix("destination:") {
+            destination_matches = value.trim() == destination;
+        } else if let Some(value) = line.strip_prefix("flags:") {
+            has_host_flag = value
+                .trim()
+                .trim_start_matches('<')
+                .trim_end_matches('>')
+                .split(',')
+                .any(|flag| flag == "HOST");
+        }
+    }
+    destination_matches && has_host_flag
 }
 
 /** 判断地址是否位于 Mihomo/Clash 常用的 `198.18.0.0/15` Fake-IP 网段。 */
@@ -591,9 +625,21 @@ fn route_matches_primary_network(
     interface_matches && gateway_matches
 }
 
-/** 清理本次连接主动添加的公网网关主机路由。 */
+/** 清理本次连接主动添加的公网网关主机路由；该地址已不是主机路由时不做任何删除。 */
 async fn remove_gateway_route(sudo_password: &str, host: &str) {
-    let _ = run_sudo_command(sudo_password, "route", &["-n", "delete", "-host", host]).await;
+    let current = tokio::process::Command::new("route")
+        .args(["-n", "get", host])
+        .output()
+        .await;
+    let is_own_host_route = current
+        .map(|output| {
+            output.status.success()
+                && is_host_route_for(&String::from_utf8_lossy(&output.stdout), host)
+        })
+        .unwrap_or(false);
+    if is_own_host_route {
+        let _ = run_sudo_command(sudo_password, "route", &["-n", "delete", "-host", host]).await;
+    }
 }
 
 /** 发送 Fortinet 状态事件。 */
@@ -1456,8 +1502,9 @@ pub async fn disconnect_fortinet(
 #[cfg(test)]
 mod tests {
     use super::{
-        is_mihomo_fake_ip, is_physical_interface, route_destination, route_matches_primary_network,
-        routed_ipv4_destination, FortinetAttemptSignals, Ordering, PrimaryNetworkState,
+        is_host_route_for, is_mihomo_fake_ip, is_physical_interface, route_destination,
+        route_matches_primary_network, routed_ipv4_destination, FortinetAttemptSignals, Ordering,
+        PrimaryNetworkState,
     };
 
     /** 验证 CIDR 路由可提取 route get 所需的目标地址。 */
@@ -1516,13 +1563,39 @@ mod tests {
         assert!(!is_mihomo_fake_ip("203.0.113.10".parse().unwrap()));
     }
 
-    /** 验证从 macOS route 输出提取实际数值目标，后续清理不再二次解析域名。 */
+    /** `route -n get 219.141.235.68` 命中 Mihomo TUN 分片路由时的真实输出。 */
+    const ROUTE_VIA_TUN_SPLIT: &str = "   route to: 219.141.235.68\n\
+        destination: 128.0.0.0\n       mask: 128.0.0.0\n    gateway: 198.18.0.1\n  \
+        interface: utun1024\n      flags: <UP,GATEWAY,DONE,STATIC,PRCLONING>\n";
+    /** App 固定网关出口后，同一查询命中自身主机路由时的输出。 */
+    const ROUTE_VIA_HOST_ROUTE: &str = "   route to: 219.141.235.68\n\
+        destination: 219.141.235.68\n    gateway: 192.168.100.1\n  \
+        interface: en10\n      flags: <UP,GATEWAY,HOST,DONE,STATIC>\n";
+
+    /** 验证提取的是被查询主机的数值地址，而不是命中路由表项的网络地址。 */
     #[test]
     fn extracts_routed_ipv4_destination() {
-        let route = "route to: fortinet.example.com\ndestination: 198.18.0.167\ninterface: utun6\n";
         assert_eq!(
-            routed_ipv4_destination(route),
-            Some("198.18.0.167".parse().unwrap())
+            routed_ipv4_destination(ROUTE_VIA_TUN_SPLIT),
+            Some("219.141.235.68".parse().unwrap())
         );
+
+        let resolved_domain = "   route to: 198.18.0.188\ndestination: 128.0.0.0\n       \
+            mask: 128.0.0.0\n    gateway: 198.18.0.1\n  interface: utun1024\n";
+        assert_eq!(
+            routed_ipv4_destination(resolved_domain),
+            Some("198.18.0.188".parse().unwrap())
+        );
+        assert_eq!(routed_ipv4_destination("destination: default\n"), None);
+    }
+
+    /** 验证只有命中该地址自身的主机路由时才允许 `route delete -host`。 */
+    #[test]
+    fn deletes_only_exact_host_routes() {
+        assert!(is_host_route_for(ROUTE_VIA_HOST_ROUTE, "219.141.235.68"));
+        assert!(!is_host_route_for(ROUTE_VIA_TUN_SPLIT, "219.141.235.68"));
+        // 回归：网段路由的网络地址不得被当作主机路由删除（曾误删 128.0.0.0/1）。
+        assert!(!is_host_route_for(ROUTE_VIA_TUN_SPLIT, "128.0.0.0"));
+        assert!(!is_host_route_for(ROUTE_VIA_HOST_ROUTE, "219.141.235.69"));
     }
 }
