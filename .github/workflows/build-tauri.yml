@@ -98,6 +98,7 @@ jobs:
   windows-engine-feasibility:
     needs: prep-version
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -176,9 +177,13 @@ jobs:
           WINDOWS_STABILITY_PATCH_PATH="$(cygpath -u "$GITHUB_WORKSPACE")/scripts/patches/openfortivpn-windows-stability.patch"
           COMMIT='409de945242328d7bea6e225dcfb2f45b7fe70e5'
 
-          git -c core.autocrlf=false clone --filter=blob:none --no-checkout \
-            https://github.com/hkirste/openfortivpn.git "$SOURCE_DIR"
-          git -C "$SOURCE_DIR" -c core.autocrlf=false checkout --detach "$COMMIT"
+          # 原 fork hkirste/openfortivpn 已删除；该 PR 提交仍可从上游按 SHA 拉取。
+          # 禁止 git 交互式要账号，仓库不可用时立即失败而不是挂起到超时。
+          export GIT_TERMINAL_PROMPT=0
+          git init -q "$SOURCE_DIR"
+          git -C "$SOURCE_DIR" -c core.autocrlf=false fetch --depth=1 --filter=blob:none \
+            https://github.com/adrienverge/openfortivpn.git "$COMMIT"
+          git -C "$SOURCE_DIR" -c core.autocrlf=false checkout --detach FETCH_HEAD
           test "$(git -C "$SOURCE_DIR" rev-parse HEAD)" = "$COMMIT"
           git -C "$SOURCE_DIR" apply --check "$CLEANUP_PATCH_PATH"
           git -C "$SOURCE_DIR" apply "$CLEANUP_PATCH_PATH"
